@@ -1,0 +1,609 @@
+---
+title: "Introduction to R"
+author: "JenWOOD"
+date: "04/01/2021"
+output: html_document
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is an introduction to the R coding language. 
+Tutorial learning outcomes include:
+
+# TNT part 4  - mask setwd#
+
+* Develop a basic understanding of R language, syntax and environment
+* Learn to import and understand different types R data 
+* Understand ways to access information about a data table via the code line including how to:
+	* *trim, transpose and merge data frames*
+	* *remove singletons*
+	* *manage list objects*
+	
+To use this tutorial follow along by running the code in grey boxes in a new R Studio script. Answers to questions will be listed at the end of each section.
+
+### Part 0: BEFOR YOU BEGIN
+You will need to download and install R and R Studio. You will need both. R is the basic program, that you download. It will come with its own simplified  graphical user interface (GUI). R Studio is a user interface that runs on top of R, it needs the base R code to function but has additional usability features. In this tutorial where we mention R, we are referring to R Studio.
+
+Follow instructions at this website to download and install R and R Studio:
+
+https://www.earthdatascience.org/courses/earth-analytics/document-your-science/setup-r-rstudio/
+
+Once downloaded, take a quick tour of R Studio to familiarise yourself with the graphical interface
+
+https://www.earthdatascience.org/courses/earth-analytics/document-your-science/intro-to-r-and-rstudio/
+
+### Part 1: THE R ENVIRONMENT
+### **The R thesaurus** 
+Let's get acquainted with some common terminology you will encounter when using R and highlight some coding etiquette 
+
+**R script AKA source code** This is an editable file containing the code you wish to run. Source code files are a proxy for your lab book in that it keeps a record of what you are doing. As with all research, excellent and thorough record keeping is essential.
+
+**R consol** This is a window that prints the code you have run. It  will display errors if your code is incorrect 
+
+**Working directory** This is the location on your computer that R will read and write files to. Setting the working dir is the first thing you do when you open R. To set your working directory go to the "Session" tab > "Set Working Directory" > "Choose Directory"
+
+**Packages** These are suites of statistical functions that can be downloaded. To use an R package it needs to be installed onto you computer into you R library once. Then it can be loaded and utilised whenever you choose. The main way to install a package is via the "Packages" tab in the lower right hand window of R studio. Click the blue "install" button. Ensure the 'Installing from' tab is set to CRAN. *CRAN is an acronym for the “Comprehensive R Archive Network” and is a series of non-profit organizations around the globe hosting mirrors of the base R code. R is free and this distribution underscores the open-source nature of the “R project.”* Type the package name, for example 'vegan' into the search bar and hit install. To load the package either find 'vegan' in you packages list and check the box next to it or use the code. 
+
+```{r}
+    library(vegan)
+```
+
+As an exercise, try to install and load the package "vegan" now. For more information on installing packages, where there are located and more check out this tutorial:
+
+https://www.earthdatascience.org/courses/earth-analytics/document-your-science/install-r-packages/
+
+
+**Object** An object is a piece of information you have associated with a specific name in R. Paste the below code into a new R script then run it:
+
+```{r}
+    x <- 1
+    x
+```
+
+You have just made an object called 'x' containing the entry '1'. All objects you create will appear as a list in the 'Environment' tab in the upper right window of R studio. You will be able to click on large objects, such as tables to inspect them. 
+
+Note we read R code backwards. The above code translates as:
+
+    Put the number '1' into an object called 'x'
+	
+Also note that the contents of our object, does not appear in the R console window until we call it directly by running 'x'. It appears with a '[1]' in front of it to denote we are looking at data in row 1 - actually 'x' only has one row anyway but knowing 'where' you are looking in the data is useful when inspecting larger data objects
+
+
+**Function** a function is an action that R will perform, functions have pre-defined names and always directly precede a set of CURVED parentheses. R understands many basic functions, but specialised ones (such as those we will use in multivariate analysis) need to be downloaded via 'packages'
+
+**Argument** arguments are the set of instructions needed by a function to tell it how to run. Some functions have one argument, others have many. **Each argument in a function is separated by a comma** Those functions with many arguments will often have default settings so we don't need to specify every argument. Let's take this next code for example:
+
+```{r}
+    x <- c(1,2,3,4,5,6,7,8,9,10)
+    x
+```
+
+in the above code **c()** is the function for making a vector object. Here 'vector' means 'a line of information' (nothing to do with trigonometry). The arguments are the numbers we wish to include.
+
+
+**NOTE** that this new 'x' has overwritten the old 'x'. Previously 'x' contained a single number, now x is a vector containing the numbers 1-10.
+
+**plot()** is a basic plotting function. Below, we have used it to plot our object 'x' . Here, 'x' is the argument.
+
+
+```{r}
+    plot(x)
+```    
+
+
+There are a few ways we can describe runs of numbers in R:
+
+```{r}
+    x2 <- c(11:20)
+    x2
+
+
+    x3 <- c(1,2:5,6:10)
+    x3
+```
+
+x and x3 although coded differently, contain the same information 
+If you ever need help with a function run:
+    
+    help(YourFunctionName) 
+    
+This will open a page explaining the usage of the function and all of the arguments that can be used. Try this now for plot()
+
+    help(plot)
+    
+    
+Lets draw our plot again and include a few more arguments this time.
+
+
+```{r}
+    plot(x, type = "p", col = "red", xlab = "Vector position", ylab = "Value")
+```    
+
+**QUESTION 1:** How many arguments are in the above plot    function, what do they do?
+
+**QUESTION 2:** Can you re-plot 'x' as a line plot?. *HINT: check the arguments on the help page.* 
+
+
+### Part 1: ANSWERS###
+
+**Q1** There are 5 arguments: One to call up the object to plot, one to define the type of plot - 'point plot' in this case - one to define the colour of the points on the plot, and two to define the axis labels.
+
+**Q2** You can alter the type argument to 'h' for histogram
+
+
+### Part 2: INSPECTING, MERGING and CONVERTING DATA
+
+Here are some useful basic functions for inspecting data:
+
+* **dim()** returns the dimension of an object.
+* **length()** returns the length of a vector.
+* **ncol()** and **nrow()** returns the number of columns/rows.
+
+**QUESTION 3:** what is the length/dimension of object x?
+
+The function **cbind()** and **rbind()** combine vectors, tables and matrices in either the row (r) or column (c) direction. 
+
+```{r}
+xtab <- cbind(x,x2)
+```
+
+Here we have taken our two vector objects, both of which had the same length (10 numbers long) and bound them together as columns. The bound columns are stored as a new object called 'xtab' which is a small table or matrix. You can visually inspect 'xtab' by clicking on it in the 'Environment' tab in the upper right window. Often the tables we work with are so big that we can't easily see their structure just by looking. But we can get useful summaries using the above functions: 
+
+```{r}
+length(xtab)
+nrow(xtab)
+ncol(xtab)
+dim(xtab)
+```
+
+**NOTE:** That the two vectors, once bound now have a dimension because they contain rows *and* columns. dim() is returning a report on the dimensions of xtab in a coordinate form [rows,columns]. xtab has 10 rows and 2 columns.
+
+It is helpful to know what class of object we are dealing with, the microbiome data you are likely to deal with will be objects of the class:
+
+* vector
+* matrix 
+* data.frame (or, occasionally)
+* list
+
+The entries in these objects can be numeric or characters(i.e. non numeric). Being able to know the class of object you are working with can be critical when you are troubleshooting a function.
+
+We can check that x was indeed vector class object
+
+```{r}
+is.vector(x)
+```
+
+What about xtab?
+
+```{r}
+is.vector(xtab)
+```
+
+xtab is no longer a vetor because it has 2 dimensions.
+
+**QUESTION 4:** What kind of object is xtab? *HINT: Apply the syntax for checking whether xtab is a vector to other object classes.*
+
+We can convert between different classes of object using as. functions. **NOTE** Not all conversions are possible.
+
+```{r}
+xtab2 <- as.character(xtab)
+xtab2
+```
+
+**QUESTION 5:** What class of object is xtab2?
+	
+The **as.character()** function tells R to treat the objects entries as character class entries. While it is possible to treat numbers as characters, asking R to treat characters (letters) as numbers doesn't work so well. In R character entries are enclosed in quotations, ("1") whereas numeric entries will not (1). Let's see if converting it back to numeric recovers xtab?
+
+```{r}
+xtab3 <- as.numeric(xtab2)
+```
+
+Compare the two
+
+```{r}
+xtab
+xtab3
+```
+
+You can see xtab and xtab3 are not the same. In the converting steps we have lost the structure of xtab; xtab3 is a list.
+
+Here is a handy piece of code that allows you to convert between classes of object and preserve structure. You won't always need it to preserve object structure, but its good to know for trouble shooting purposes.
+
+```{r}
+xtab4 <- apply(xtab,2,as.character)
+```
+
+Compare xtab2, which we created using **as.character()** and xtab4, which used the **apply()** function. You can see that the **apply()** function has preserved the structure of xtab.
+
+```{r}
+    xtab2
+    xtab4
+```
+
+
+OK time to make a character vector and get you practicing some code:
+
+**QUESTION 6:** Make a character vector called 'abc' containing the first 10 letters of the alphabet. Have each letter be a different entry
+
+**QUESTION 7:** Bind 'xtab' to 'abc' and call the new object "xtab_abc" 
+
+```{r, echo=FALSE}
+abc <- c("a","b","c","d","e","f","g","h","i","j")
+
+xtab_abc <- cbind(xtab,abc)
+```
+
+**QUESTION 8:** What kind of object is this?
+
+A useful thing to do can be to transpose our object via the function **t()**
+
+```{r}
+xtab_abc <- t(xtab_abc)	
+```
+
+**QUESTION 9:** Bind the objects xtab_abc and xtab by their columns and store them as a new object called 'xtab_abc_xtab'
+
+**QUESTION 10:** What's the issue here? How could we resolve it? *HINT: check the dimensions*
+
+**Question: 11** What happens if we convert this character matrix to numeric?
+
+
+### Part 2: ANSWERS###
+**Q3** The length of object x is 10, it can be found using can be via the length() function thus:
+
+```{r} 
+length(x)
+```
+
+To find the the dimension of an object use the function dim(). But because x is a vector (i.e it is a line of numbers) it has no dimensions so the result returned will be  'NULL'. 
+```{r}
+dim(x)
+```
+
+**Q4** xtab is a numeric matrix. You can run throguh the following list of functions to determine teh class of an object:
+
+    is.vector()
+    is.matrix()
+    is.data.frame()
+    is.list()
+    is.numeric()
+    is.character()
+
+**Q5** Using the same list of functions above, you will find xtab2 is a character list.
+
+**Q6**
+```{r}
+    abc <- c("a","b","c","d","e","f","g","h","i","j")
+```
+
+**Q7**
+```{r}
+xtab_abc <- cbind(xtab,abc)
+```
+
+**Q8** A character matrix
+```{r, echo = FALSE}
+xtab_abc <- t(xtab_abc)
+```
+**Q9 & Q10** 
+We can try an bind them together via the below code, but we will get an error.
+
+    xtab_abc_xtab <- cbind( xtab_abc,xtab)
+
+Since we transposed 'xtab_abc'  it has 3 rows and 10 columns. The original xtab, which has not been transposed has 10 rows and 2 columns. To bind object by their columns they must have the same number of rows. Similarly to bind object rot to row they must have the same number of columns.
+
+```{r}
+dim(xtab_abc)
+
+dim(xtab)
+```    
+We can solve this issue by transposing xtab_abc again so that it is back in the original orientaion.
+
+```{r}
+xtab_abc <- t(xtab_abc)
+xtab_abc_xtab <- cbind(xtab_abc,xtab)
+```
+**NOTE:** We can nest functions within functions to turn a two step process into one:
+
+    e.g: xtab_abc_xtab<- cbind(t(xtab_abc),xtab)
+    
+**Q11** All of the information that cannot be coded as numbers is lost! 
+
+```{R}
+new <- apply(xtab_abc_xtab,2,as.numeric)
+new
+```
+
+### Part 3: INSPECTING ELEMENTS OF DATA###
+
+Lets begin with the object 'new' which was coded up in the last answer of Part2. 
+
+**QUESTION:12** How many rows does 'new' have? How many columns? *HINT: functions were given earlier*
+
+R reports tables in a coordinate form [rows,columns]. 'new' has 10 rows and 5 columns
+**NOTE:** To look inside data we use SQUARE brackets. Round brackets denote a function. 
+We can inspect an entry at a specific coordinate of our data using square brackets thus:
+
+```{r}
+  new[3,2] 
+```
+
+This shows us the entry in the 3rd row of the 2nd column. We can see a whole row by leaving the column space empty. **NOTE:** The first row of info being returned is the column labels, which you may recognise are some of our original object names.  
+
+```{r}
+new[3,]
+```
+Or visa versa to look at one whole column
+```{r}
+new[,2]
+```
+
+**QUESTION 13:** What happens if we leave the comma out?
+
+```{r}
+new[3]
+```
+
+
+We can denote blocks of rows/columns to inspect a small subset of the data. The below code is calling up rows 1 to 3 in columns 1 and 2. 
+
+```{r}
+xtab[1:3,1:2]
+```
+
+This can be useful to quickly check location of a particular piece of data in a larger table. For example, if we have some R code that needs us to specify a particular parameter in our metadata (e.g treatment group, mouse weight, shoot length, pH ...) then this is a quick way to identify which column/row that data is present in.   
+	
+
+OK, lets make a new object
+```{r}
+xtab <- cbind(x,x2,x3)
+xtab
+```
+
+**NOTE:**That this new 'xtab' has overwritten the old xtab. When working on a new script be sure to give objects unique names OR routinely check that you are working with what you think you are working 
+with. Here's some code-based ways you might go about the latter:
+
+Ask: Is the object of correct dimensions
+
+```{r}
+dim(xtab)
+```
+
+Ask: What are the column names
+
+```{r}
+colnames(xtab)
+```
+
+**QUESTION 14:** What are the rownames?
+
+For big objects, we can investigate what the first 5 rows look like using the head() function or what the last 5 rows look like using the tail() function.
+
+```{r}
+head(xtab)
+tail(xtab)
+```
+
+**QUESTION 15:** Can you use the head() function to specifically inspect the first 2 rows?
+
+
+### Part 3: ANSWERS###
+**Q12** 10 rows and 5 columns
+
+```{r}
+dim(new)
+```
+	
+**Q13** We are getting the 3rd entry of the first column. In other words R is defaulting to using '1' in the column space of the coordinate system [3] == [3,1]
+
+**Q14**
+```{r}
+rownames(xtab)
+```
+
+**Q15** To work out the arguments you have available to modify a function start with the help page: help(head). On the R Documentation for help() you will see that the second argument is 
+
+    n:   an integer vector of length up to dim(x) (or 1, for non-dimensioned objects). Values specify the indices to be selected in the corresponding dimension (or along the length) of the object.
+
+So, this argument (n) is a number that can be as large as the maximum dimension of the object we are looking at. The number you place here will specify how many rows will be displayed.
+
+```{r}
+head(xtab,2)
+```
+
+### Part 4: READING IN DATA ###
+Typically we will read in tab-delimited .txt files or .csv files with the functions:
+
+* read.table()
+* read.csv()
+
+We will read in the training files associated with this tutorial. If you like you can open them up first in excel ora  text editor and see their contents. 
+
+* otu_training.csv - *this is a basic OTU table. Each column is a sample, and the sample names are in first row. Each row represents a different OTU, with OTU IDs listed in the first column. The entries in this table are the OTU abundances which are also called reads or read abundances.*
+* treat_training.txt - *This is a file containing the treatment parameters for each sample. The sample are the rows and in this example we can see that our samples varied in thier soil location (i.e there were either sampled from the soil adhering to the plant roots, called the rhizosphere or from soil away from the plant roots). the also varied in the amount of cadmium (Cd) contained in the soil (0, 20 or 100 mg). The final column combines the location and cadmium dose information creating 6 distinct treatment groups. Files like this are often referred to as 'treatment metadata', or occasionally as 'mapping files'*
+* treatotu_training.csv - *this a table that contains both the treatment data and the out data in one single table. This kind of file can be very useful as the correct treatment date is ALWAYS associated with the correct OTU data (it's not a good idea to rely on the OTU table and treatment files always remaining the the same order, people can't help but tinker with them*
+
+Place them in a folder and set the  working directory to that folder.
+
+    eg: setwd("C:/Users/JenWood/OneDrive - LA TROBE UNIVERSITY/R/R101")
+
+Read in "treat_training.txt" and "otu_training.csv". rename them as objects called 'treat' and 'otu'. Let's get a sense as to the size of these tables while we are at it.
+
+```{r}
+treat <- read.table("treat_training.txt")
+otu <- read.csv("otu_training.csv")
+
+dim(treat)
+dim(otu)
+```
+
+**QUESTION 16:** What's a quick way to check what is in the object 'otu'?
+
+**QUESTION 17:**What is written in the 5th row and 20th column of 'otu'
+
+
+Consider the following two lines of code, they have additional arguments:
+
+```{r}
+treat2 <- read.table("treat_training.txt", header = T)
+treat3 <- read.table("treat_training.txt", header = T, row.names= 1)
+```
+
+**QUESTION 18:** How do 'treat', 'treat2' and 'treat3' differ?
+
+**QUESTION 19:** Transfer the rownames of treat3 into the rownames of treat2. *HINT: Google 'rownames R' to work out what function you might use. R has a massive online support network: so if in doubt: Google it. 
+
+**QUESTION 20:** Are these two objects, 'treat2' and 'treat3' identical now?
+
+**QUESTION 21:** Can trim them to make them be identical? *HINT: the coordinate system can be used to remove data as well as view it - this is called removing via column index number* 
+
+**QUESTION 22:** Re-read in your otu table with a header and rownames
+	
+**Q16** 
+```{r}
+head(otu)
+```
+
+**Q17**
+```{r}
+otu[5,20]
+```	
+
+**Q18** If you run any one of dim() or head() or otu(1:5,1:5). You will notice there is a change in structure. 'treat2' has one less row that 'treat' because we have specified that the first row of the table contains column labels (or a header) rather than data. This info is now stored as the column names attribute of this object rather than in the data table. Similarly, 'treat3' has one less column because we have specified that the first column contains our rownames, not real data.
+
+**Q19** The function needed to access rownames is rownames(). The followign code will take rownames of 'treat3' and overwrite the rownames of 'treat2'
+
+```{r}
+row.names(treat2)
+row.names(treat2) <- row.names(treat3)
+row.names(treat3)
+row.names(treat2)
+```
+	
+**Q20** Not they are not identical, the first column of 'treat2' contains rownames in the first column. you can inspect the differences using head().	
+
+**Q21**
+```{r}
+treat2 <- treat2[,-1]
+```
+**NOTE:** That I am re-writing 'treat2' as I do this. I might have equally used the following code:
+    
+    treat2 <- subset(treat2, select = -c(,1) )
+
+**Q21**
+```{r}
+otu <- read.csv("otu_training.csv",header = T, row.names = 1)
+```
+	
+
+### Part 5: SUBSETTING DATA.FRAMES
+Start by merging the 'treat3' and 'otu' objects. Rename as mat1. **NOTE:** Merging order matters. cbind(treat3,otu) does not equal cbind(otu,treat3). Recall also that when merging by columns object need to have the same number of rows...how did we solve the issue last time? 
+
+```{r, echo=FALSE}
+mat1 <- cbind(treat3,t(otu))
+```
+
+Recall we can look at specific columns of the new data if we wish.
+
+```{r}
+mat1[,3]
+```
+
+For data tables we can also look at columns by calling the specific column names
+
+**QUESTION 22:** What are the first few column names for mat1?
+
+The first few column names reflect metadata from the 'treat' file. The rest are OTU IDs. Here is how we call a specific column by name, we will call the column named 'Group':
+
+```{r}
+mat1$Group
+```
+
+Have a look at the first 3 columns of 'mat1'. We'll do some subsetting based on these columns.
+
+#### EXAMPLE 1: Making a new table with only rows that are 'rhizosphere' samples:
+To do this we will specify a column header and a character entry within the coordinate system.
+
+```{r}
+dim(mat1)
+mat_rhizo <- mat1[mat1$Location=="Rhizosphere",]
+dim(mat_rhizo)
+mat_rhizo[,1:3]
+```
+
+The literal translation of the above code 
+
+    mat_rhizo <- mat1[mat1$Location=="Rhizosphere",]
+    
+is *"look in the object 'mat1' and find column called "Location". Within this column find only the rows containing the entry "Rhizosphere".  Place these rows, and all their associated columns into a new object called "mat_rhizo".*
+
+**NOTE:** The use of column calling within the coordinate system here: we have used a double equals sign (==) to denote 'equals to'. This is because 'not equals to is denoted thus: != Notice also how I used dim() to check my progress. Finally, "Rhizosphere" is not an object or a number it is a character string entry so we need "" around it.
+
+#### EXAMPLE 2: Making a new table with all Cd doses except for the 20_mg:
+
+```{r}
+dim(mat1)
+mat_0_100 <- mat1[mat1$Cd_dose!="20_mg",]
+dim(mat_0_100)
+mat_0_100[,1:3]
+```
+
+Notice the short hand for not equal to is !=
+
+**QUESTION 23:** Make a new object with only the 0_mg bulk_soil samples.
+
+**QUESTION 24:**Import "treatotu_training" and split it into an otu and treatment file
+
+	
+### Part 5 ANSWERS
+
+**Q22**
+
+```{r}
+head(colnames(mat1))
+```
+
+**Q23**
+```{r}
+mat_new <- mat1[mat1$Group=="Bulk_0"]
+```
+
+**Q24**
+```{r}
+otut <- read.csv("treatotu_training.csv",header = T, row.names = 1)
+head(colnames(otut),10)
+treat2 <- otut[,1:4]
+otu2 <- otut[,5:ncol(otut)]
+```
+
+### Part 6: WRITE OUT DATA###
+To create excel sheets of our data we need to download a package 'xlsx'
+Download the package **xlsx**
+
+*If there are errors associated with the installation of xlsx you may need to download an updated version of java (xlsx uses java). Make sure your java version matches your R version (i.e. 64 or 32-bit)*
+
+Load the package:
+
+```{r}
+library(xlsx)
+```
+
+**FINAL TASK** Can you read out 'otu' as an excel file?
+**HINT:** Google it, and use the help() function
+
+
+## END SCRIPT##
+**Functions we have used:**
+
+* c()
+* cbind(), rbind()
+* dim(), ncol(),nrwo()
+* head(), tail()
+* colnames(), rownames()
+* t(), subset()
+* read.table(), read.csv(), write.xlsx2() 
+* help()
+* as.vector(), as.matrix(), as.data.frame(), as.list(), as.numeric(), as.character()
